@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم الشاملة</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111827; color: white; text-align: center; padding: 40px 20px; margin: 0; }
+        .admin-box { background: #1f2937; padding: 30px; border-radius: 15px; display: inline-block; width: 95%; max-width: 900px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #374151; box-sizing: border-box; }
+        .btn { padding: 12px 24px; font-size: 15px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin: 8px; transition: 0.2s; }
+        .btn-draw { background: #d4af37; color: #111827; }
+        .btn-draw:hover { background: #fff; }
+        .btn-reset { background: #ef4444; color: white; }
+        .btn-reset:hover { background: #b91c1c; }
+        
+        /* تصميم صندوق الفائز */
+        .winner-box { margin: 25px auto; padding: 20px; background: #2d3748; border: 2px dashed #d4af37; border-radius: 8px; max-width: 500px; display: none; text-align: right; }
+        .winner-box p { margin: 8px 0; font-size: 16px; border-bottom: 1px solid #374151; padding-bottom: 5px; }
+        
+        /* تصميم جدول عرض جميع البيانات */
+        .table-container { margin-top: 30px; overflow-x: auto; background: #2d3748; border-radius: 10px; padding: 10px; border: 1px solid #374151; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 14px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #374151; }
+        th { background-color: #111827; color: #d4af37; font-weight: bold; }
+        tr:hover { background-color: #374151; }
+
+        /* واجهة تسجيل دخول المشرف */
+        .login-box { background: #1f2937; padding: 30px; border-radius: 15px; display: inline-block; width: 320px; border: 1px solid #374151; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-top: 100px; }
+        .login-box input { width: 90%; padding: 12px; margin: 15px 0; border: 1px solid #4b5563; background: #111827; color: white; border-radius: 8px; text-align: center; font-size: 16px; }
+        .login-box button { width: 98%; padding: 12px; background: #d4af37; color: #111827; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<!-- 1. واجهة التحقق من كلمة المرور -->
+<div class="login-box" id="authBox">
+    <h2 style="color: #d4af37; margin-top: 0;">تسجيل دخول الإدارة 🔐</h2>
+    <p style="color: #9ca3af; font-size: 14px;">أدخل كلمة المرور الخاصة بك لإدارة السحب</p>
+    <input type="password" id="adminPassword" placeholder="كلمة المرور">
+    <button onclick="checkPassword()">دخول اللوحة</button>
+</div>
+
+<!-- 2. لوحة التحكم الأساسية وعرض البيانات -->
+<div class="admin-box" id="mainAdminBox" style="display: none;">
+    <h1>لوحة إدارة السحب والبيانات 📊</h1>
+    <p>إجمالي المشتركين الحاليين بالموقع: <span id="count" style="font-weight: bold; color: #d4af37; font-size: 24px;">جاري المزامنة...</span></p>
+    
+    <button class="btn btn-draw" onclick="drawWinner()">🎯 إجراء القرعة العشوائية</button>
+    <button class="btn btn-reset" onclick="resetContest()">🗑️ تصفير المسابقة لشهر جديد</button>
+
+    <!-- صندوق عرض الفائز بالقرعة -->
+    <div class="winner-box" id="winnerBox">
+        <h2 style="color: #d4af37; text-align: center; margin-top: 0;">🎉 بيانات الفائز المحظوظ:</h2>
+        <div id="winnerDetails"></div>
+    </div>
+
+    <!-- جدول عرض معلومات جميع المسجلين -->
+    <h2>📋 قائمة جميع المسجلين الحالية:</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم الكامل</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>حساب إنستغرام</th>
+                    <th>وقت التسجيل</th>
+                </tr>
+            </thead>
+            <tbody id="participantsTableBody">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #9ca3af;">جاري تحميل القائمة السحابية...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const DATA_URL = "https://jsonbin.io"; 
+const API_KEY = "$2b$10$9J2h6MxFzP3V8RzXw5K2O.hYv8z9X1J2R3M4P5v6b7n8m9q0w1e2r";
+
+function checkPassword() {
+    const passInput = document.getElementById('adminPassword').value;
+    const correctPass = "OUSSAMA 3";
+
+    if (passInput === correctPass) {
+        document.getElementById('authBox').style.display = 'none';
+        document.getElementById('mainAdminBox').style.display = 'inline-block';
+        loadAllData();
+        setInterval(loadAllData, 15000); // تحديث تلقائي للجدول كل 15 ثانية
+    } else {
+        alert("كلمة المرور غير صحيحة! حاول مجدداً.");
+    }
+}
+
+// دالة جلب وعرض كل البيانات في الجدول أونلاين
+async function loadAllData() {
+    try {
+        const response = await fetch(DATA_URL, { headers: { "X-Master-Key": API_KEY } });
+        const result = await response.json();
+        const participants = result.record.contestants || [];
+        
+        document.getElementById('count').innerText = participants.length;
+        
+        const tableBody = document.getElementById('participantsTableBody');
+        tableBody.innerHTML = ""; 
+        
+        if (participants.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9ca3af;">لا يوجد أي مسجلين في السحب حتى الآن.</td></tr>`;
+            return;
+        }
+        
+        participants.forEach((user, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${user.username || "غير مسجل"}</strong></td>
+                <td>${user.useremail || "غير مسجل"}</td>
+                <td><a href="https://instagram.com{(user.instagram || '').replace('@','')}" target="_blank" style="color: #d4af37; text-decoration: none;">${user.instagram || "غير مسجل"}</a></td>
+                <td style="color: #9ca3af; font-size: 12px;">${user.timestamp || "غير مسجل"}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        document.getElementById('count').innerText = "خطأ في الاتصال";
+    }
+}
+
+async function drawWinner() {
+    try {
+        const response = await fetch(DATA_URL, { headers: { "X-Master-Key": API_KEY } });
+        const result = await response.json();
+        const participants = result.record.contestants || [];
+        
+        if (participants.length === 0) {
+            alert("قائمة المسجلين فارغة حالياً!");
+            return;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * participants.length);
+        const winner = participants[randomIndex];
+        
+        const detailsContainer = document.getElementById('winnerDetails');
+        detailsContainer.innerHTML = `
+            <p><strong>📌 الاسم الكامل:</strong> ${winner.username}</p>
+            <p><strong>📌 البريد الإلكتروني:</strong> ${winner.useremail}</p>
+            <p><strong>📌 حساب إنستغرام:</strong> ${winner.instagram}</p>
+            <p><strong>📌 وقت التسجيل:</strong> ${winner.timestamp}</p>
+        `;
+        
+        document.getElementById('winnerBox').style.display = "block";
+    } catch (error) {
+        alert("فشل إجراء القرعة بسبب مشكلة في الاتصال!");
+    }
+}
+
+async function resetContest() {
+    if (confirm("تنبيه خطير: هل أنت متأكد من مسح وإفراغ قائمة المسجلين بالكامل لبدء شهر جديد؟")) {
+        try {
+            await fetch(DATA_URL, {
+                method: 'PUT',
+                headers: { "Content-Type": "application/json", "X--Key": API_KEY },
+                body: JSON.stringify({ contestants: [] })
+            });
+            loadAllData();
+            document.getElementById('winnerBox').style.display = "none";
+            alert("تم تصفير القائمة بنجاح!");
+        } catch (error) {
+            alert("فشل تصفير القائمة السحابية!");
+        }
+    }
+}
+</script>
+</body>
+</html>
