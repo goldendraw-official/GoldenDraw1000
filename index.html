@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السحب الشهري الكبير</title>
+    <style>
+        :root {
+            --primary-color: #d4af37;
+            --primary-hover: #aa8c2c;
+            --bg-gradient: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            --card-bg: #2d3748;
+            --text-color: #f3f4f6;
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-sizing: border-box;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        h2 { margin: 0; color: var(--primary-color); font-size: 28px; }
+        .prize-tag { font-size: 42px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); margin: 15px 0; }
+        p.subtitle { color: #9ca3af; font-size: 15px; margin-bottom: 30px; }
+        
+        .form-group { text-align: right; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #cbd5e1; }
+        input { width: 100%; padding: 12px 15px; background: #1f2937; border: 2px solid #4b5563; border-radius: 10px; font-size: 15px; color: white; outline: none; box-sizing: border-box; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary-color); }
+        
+        button { width: 100%; padding: 14px; background: var(--primary-color); color: #111827; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        button:hover { background: #f1c40f; }
+        button:disabled { background: #4b5563; cursor: not-allowed; }
+        .msg { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; display: none; }
+        .msg.error { background: rgba(248, 113, 113, 0.15); color: var(--error-color); border: 1px solid var(--error-color); display: block; }
+        .msg.success { background: rgba(52, 211, 153, 0.15); color: var(--success-color); border: 1px solid var(--success-color); display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="font-size: 55px; margin-bottom: 5px;">🏆</div>
+    <h2 id="uiTitle">السحب الشهري الكبير</h2>
+    <div class="prize-tag" id="uiPrize">1,000$</div>
+    <p class="subtitle" id="uiSubtitle">سجل الآن مجاناً للدخول في سحب هذا الشهر</p>
+    
+    <form id="dynamicForm">
+        <div id="fieldsContainer"></div>
+        <p id="uiWarning" style="color: #f87171; font-size: 13px; font-weight: bold; margin: 15px 0; line-height: 1.5;"></p>
+        <button type="submit" id="uiBtn">دخول السحب الآمن</button>
+    </form>
+    
+    <div id="msgBox" class="msg"></div>
+</div>
+
+<script>
+// القائمة السحابية المستقلة والمشتركة بين الصفحتين
+const DATA_URL = "https://jsonbin.io"; 
+const API_KEY = "$2b$10$9J2h6MxFzP3V8RzXw5K2O.hYv8z9X1J2R3M4P5v6b7n8m9q0w1e2r";
+
+const CONFIG = {
+    title: "السحب الشهري الكبير",
+    prize: "1,000$",
+    subtitle: "سجل بياناتك الآن مجاناً للدخول في سحب هذا الشهر",
+    btnText: "دخول السحب الآمن",
+    warningText: "⚠️ تنبيه: أي تلاعب أو كتابة للمعلومات بشكل غير صحيح يؤدي للطرد من السحب وحظ أوفر للجميع!"
+};
+
+const FIELDS = [
+    { id: "username", label: "الاسم الكامل:", type: "text", placeholder: "أدخل اسمك الثلاثي", required: true },
+    { id: "useremail", label: "البريد الإلكتروني الحقيقي:", type: "email", placeholder: "example@gmail.com", required: true },
+    { id: "instagram", label: "حساب إنستغرام (Instagram):", type: "text", placeholder: "أدخل اسم حسابك مثل username@", required: true }
+];
+
+document.getElementById('uiTitle').innerText = CONFIG.title;
+document.getElementById('uiPrize').innerText = CONFIG.prize;
+document.getElementById('uiSubtitle').innerText = CONFIG.subtitle;
+document.getElementById('uiBtn').innerText = CONFIG.btnText;
+document.getElementById('uiWarning').innerText = CONFIG.warningText;
+
+const container = document.getElementById('fieldsContainer');
+FIELDS.forEach(field => {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+    group.innerHTML = `
+        <label for="${field.id}">${field.label}</label>
+        <input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" ${field.required ? 'required' : ''} autocomplete="off">
+    `;
+    container.appendChild(group);
+});
+
+document.getElementById('dynamicForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const msgBox = document.getElementById('msgBox');
+    const submitBtn = document.getElementById('uiBtn');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "جاري الحفظ والمزامنة السحابية...";
+
+    let entryData = {};
+    FIELDS.forEach(field => {
+        entryData[field.id] = document.getElementById(field.id).value.trim();
+    });
+
+    const emailKey = entryData['useremail'].toLowerCase();
+
+    try {
+        const res = await fetch(DATA_URL, { headers: { "X-Master-Key": API_KEY } });
+        const result = await res.json();
+        let participants = result.record.contestants || [];
+        
+        const isExist = participants.some(p => p.useremail.toLowerCase() === emailKey);
+        if (isExist) {
+            showMsg("هذا البريد الإلكتروني مسجل بالفعل في سحب هذا الشهر!", "error");
+            return;
+        }
+
+        entryData['timestamp'] = new Date().toLocaleString('ar-EG');
+        participants.push(entryData);
+
+        await fetch(DATA_URL, {
+            method: 'PUT',
+            headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
+            body: JSON.stringify({ contestants: participants })
+        });
+
+        showMsg("تم تسجيل بياناتك بنجاح ومزامنتها سحابياً! حظاً موفقاً.", "success");
+        document.getElementById('dynamicForm').reset();
+    } catch (error) {
+        showMsg("حدث خطأ أثناء المزامنة السحابية، يرجى المحاولة لاحقاً.", "error");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = CONFIG.btnText;
+    }
+});
+
+function showMsg(text, type) {
+    const msgBox = document.getElementById('msgBox');
+    msgBox.className = `msg ${type}`;
+    msgBox.innerText = text;
+}
+</script>
+</body>
+</html>
