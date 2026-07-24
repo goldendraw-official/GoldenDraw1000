@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم والإدارة الذكية - محمية</title>
+    <style>
+        /* إخفاء المحتوى الافتراضي تماماً لحماية البيانات */
+        body { font-family: sans-serif; background: #111827; color: white; text-align: center; padding: 50px 20px; display: none; }
+        .admin-box { background: #1f2937; padding: 40px; border-radius: 15px; display: inline-block; min-width: 350px; max-width: 800px; width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #374151; box-sizing: border-box; }
+        .btn { padding: 12px 24px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin: 10px; transition: 0.2s; }
+        .btn-draw { background: #d4af37; color: #111827; }
+        .btn-draw:hover { background: #fff; }
+        .btn-reset { background: #ef4444; color: white; font-size: 14px; }
+        .btn-reset:hover { background: #b91c1c; }
+        .winner-box { margin-top: 30px; padding: 20px; background: #2d3748; border: 2px dashed #d4af37; border-radius: 8px; display: none; text-align: right; }
+        .winner-box p { margin: 8px 0; font-size: 16px; border-bottom: 1px solid #374151; padding-bottom: 5px; }
+        
+        /* تصميم جدول عرض المشاركين */
+        .participants-table-container { margin-top: 30px; text-align: right; overflow-x: auto; }
+        .participants-table-container h2 { color: #d4af37; font-size: 20px; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #111827; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px 15px; border: 1px solid #374151; text-align: center; font-size: 14px; }
+        th { background-color: #374151; color: #d4af37; font-weight: bold; }
+        tr:nth-child(even) { background-color: #1f2937; }
+        .no-data { text-align: center; padding: 20px; color: #9ca3af; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<!-- نظام التحقق الفوري من كلمة السر قبل عرض أي بيانات للزائر -->
+<script>
+    // ==========================================
+    // 🔐 رمز الحماية الخاص بك (تم تعديله بنجاح)
+    // ==========================================
+    const SECRET_PIN = "OUSSAMA 3"; 
+
+    const userPassword = prompt("الرجاء إدخال الرمز السري للدخول إلى لوحة التحكم:");
+    
+    // فحص كلمة السر المدخلة ومقارنتها بالرمز المطلوب
+    if (userPassword !== null && userPassword.trim() === SECRET_PIN) {
+        // الرمز صحيح: يتم السماح بالدخول وإظهار لوحة التحكم
+        document.body.style.display = "block";
+    } else {
+        // الرمز خاطئ: يتم طرد الزائر مباشرة وإعادته لصفحة التسجيل index.html
+        alert("رمز سري خاطئ! ليس لديك صلاحية الدخول.");
+        window.location.href = "index.html"; 
+    }
+</script>
+
+<div class="admin-box">
+    <h1>لوحة إدارة السحب الذكية 📊</h1>
+    <p>إجمالي المشتركين النشطين: <span id="count" style="font-weight: bold; color: #d4af37; font-size: 24px;">0</span></p>
+    <button class="btn btn-draw" onclick="drawWinner()">🎯 إجراء القرعة واختيار فائز</button>
+    <br>
+    <button class="btn btn-reset" onclick="resetContest()">🗑️ تصفير المسابقة لشهر جديد</button>
+    
+    <!-- صندوق الفائز المحظوظ -->
+    <div class="winner-box" id="winnerBox">
+        <h2 style="color: #d4af37; text-align: center; margin-top: 0;">🎉 بيانات الفائز المحظوظ:</h2>
+        <div id="winnerDetails"></div>
+    </div>
+
+    <!-- 👥 قسم عرض جدول المشاركين الجديد -->
+    <div class="participants-table-container">
+        <h2>👥 قائمة جميع المشاركين في السحب:</h2>
+        <div id="tableContainer"></div>
+    </div>
+</div>
+
+<script>
+// تحديث العداد وعرض الجدول عند تحميل الصفحة
+function updateAdminPanel() {
+    const participants = JSON.parse(localStorage.getItem('contestants')) || [];
+    
+    // 1. تحديث العداد
+    document.getElementById('count').innerText = participants.length;
+    
+    // 2. بناء جدول المشاركين
+    const tableContainer = document.getElementById('tableContainer');
+    if (participants.length === 0) {
+        tableContainer.innerHTML = '<p class="no-data">لا توجد بيانات مشاركين حالياً في قاعدة البيانات.</p>';
+        return;
+    }
+    
+    let tableHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الاسم الكامل</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>حساب إنستغرام</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    participants.forEach((user, index) => {
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${user.username || '---'}</td>
+                <td>${user.useremail || '---'}</td>
+                <td><a href="https://instagram.com{user.instagram}" target="_blank" style="color: #d4af37; text-decoration: none;">@${user.instagram || '---'}</a></td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    tableContainer.innerHTML = tableHTML;
+}
+
+// تشغيل التحديث فور الدخول
+updateAdminPanel();
+
+function drawWinner() {
+    const participants = JSON.parse(localStorage.getItem('contestants')) || [];
+    if (participants.length === 0) { alert("لا يوجد مشاركون في السحب حالياً!"); return; }
+    const randomIndex = Math.floor(Math.random() * participants.length);
+    const winner = participants[randomIndex];
+    const detailsContainer = document.getElementById('winnerDetails');
+    detailsContainer.innerHTML = "";
+    const translate = { username: "الاسم الكامل", useremail: "البريد الإلكتروني", instagram: "حساب إنستغرام", timestamp: "وقت التسجيل" };
+    for (let key in winner) {
+        const label = translate[key] || key;
+        detailsContainer.innerHTML += `<p><strong>📌 ${label}:</strong> ${winner[key]}</p>`;
+    }
+    document.getElementById('winnerBox').style.display = "block";
+}
+
+function resetContest() {
+    if (confirm("هل أنت متأكد من حذف القائمة لبدء شهر جديد؟")) {
+        localStorage.removeItem('contestants'); 
+        updateAdminPanel(); // تحديث الجدول والعداد ليصبحا صفر
+        document.getElementById('winnerBox').style.display = "none"; 
+        alert("تم تصفير القائمة بنجاح!");
+    }
+}
+</script>
+</body>
+</html>
